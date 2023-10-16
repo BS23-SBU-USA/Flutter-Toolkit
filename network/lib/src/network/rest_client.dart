@@ -15,13 +15,13 @@ class RestClient {
 
   factory RestClient({
     required String baseUrl,
-    required Future<String?> Function() token,
+    required Future<String?> Function() tokenCallBack,
     required VoidCallback onUnAuthorizedError,
     int connectionTimeout = 30000,
     int receiveTimeout = 30000,
   }) {
     _instance.baseUrl = baseUrl;
-    _instance.token = token;
+    _instance.tokenCallBack = tokenCallBack;
     _instance.onUnAuthorizedError = onUnAuthorizedError;
     _instance.connectionTimeout = connectionTimeout;
     _instance.receiveTimeout = receiveTimeout;
@@ -40,7 +40,7 @@ class RestClient {
   late int connectionTimeout;
   late int receiveTimeout;
   late String baseUrl;
-  late Future<String?> Function() token;
+  late Future<String?> Function() tokenCallBack;
   late VoidCallback onUnAuthorizedError;
 
   Future<Response<dynamic>> get(
@@ -303,7 +303,7 @@ class RestClient {
         return PublicApiOptions().options;
 
       case APIType.protected:
-        String? token = await this.token();
+        String? token = await tokenCallBack();
 
         return ProtectedApiOptions(token!).options;
 
