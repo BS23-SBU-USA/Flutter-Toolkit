@@ -16,13 +16,13 @@ class RestClient {
   factory RestClient({
     required String baseUrl,
     required Future<String?> Function() tokenCallBack,
-    required VoidCallback onUnAuthorizedError,
+    VoidCallback? onUnAuthorizedError,
     int connectionTimeout = 30000,
     int receiveTimeout = 30000,
   }) {
     _instance.baseUrl = baseUrl;
     _instance.tokenCallBack = tokenCallBack;
-    _instance.onUnAuthorizedError = onUnAuthorizedError;
+    _instance.onUnAuthorizedError = onUnAuthorizedError ?? () {};
     _instance.connectionTimeout = connectionTimeout;
     _instance.receiveTimeout = receiveTimeout;
 
