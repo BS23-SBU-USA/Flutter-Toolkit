@@ -45,20 +45,20 @@ packages:
     dependency: "direct main"
     description:
       name: cupertino_icons
-      sha256: e35129dc44c9118cee2a5603506d823bab99c68393879edb440e0090d07586be
+      sha256: d57953e10f9f8327ce64a508a355f0b1ec902193f66288e8cb5070e7c47eeb2d
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.5"
+    version: "1.0.6"
   dio:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: dio
-      sha256: "0894a098594263fe1caaba3520e3016d8a855caeb010a882273189cca10f11e9"
+      sha256: "417e2a6f9d83ab396ec38ff4ea5da6c254da71e4db765ad737a42af6930140b7"
       url: "https://pub.dev"
     source: hosted
-    version: "5.1.1"
+    version: "5.3.3"
   equatable:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: equatable
       sha256: c2b87cb7756efdf69892005af546c56c0b5037f54d2a88269b4f347a505e3ca2
@@ -82,17 +82,17 @@ packages:
     dependency: "direct dev"
     description:
       name: flutter_lints
-      sha256: "2118df84ef0c3ca93f96123a616ae8540879991b8b57af2f81b76a7ada49b2a4"
+      sha256: a25a15ebbdfc33ab1cd26c63a6ee519df92338a9c10f122adda92938253bef04
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.2"
+    version: "2.0.3"
   flutter_test:
     dependency: "direct dev"
     description: flutter
     source: sdk
     version: "0.0.0"
   http_parser:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: http_parser
       sha256: "2aa08ce0341cc9b354a498388e30986515406668dbcc4f7c950c3e715496693b"
@@ -100,7 +100,7 @@ packages:
     source: hosted
     version: "4.0.2"
   internet_connection_checker:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: internet_connection_checker
       sha256: "1c683e63e89c9ac66a40748b1b20889fd9804980da732bf2b58d6d5456c8e876"
@@ -111,18 +111,18 @@ packages:
     dependency: transitive
     description:
       name: lints
-      sha256: "5e4a9cd06d447758280a8ac2405101e0e2094d2a1dbdd3756aec3fe7775ba593"
+      sha256: "0a217c6c989d21039f1498c3ed9f3ed71b354e69873f13a8dfc3c9fe76f1b452"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.1"
+    version: "2.1.1"
   logger:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: logger
-      sha256: "5076f09225f91dc49289a4ccb92df2eeea9ea01cf7c26d49b3a1f04c6a49eec1"
+      sha256: "7ad7215c15420a102ec687bb320a7312afd449bac63bfb1c60d9787c27b9767f"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "1.4.0"
   matcher:
     dependency: transitive
     description:
@@ -147,6 +147,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.1"
+  network:
+    dependency: "direct main"
+    description:
+      path: ".."
+      relative: true
+    source: path
+    version: "1.0.0+1"
   path:
     dependency: transitive
     description:
@@ -156,7 +163,7 @@ packages:
     source: hosted
     version: "1.8.3"
   pretty_dio_logger:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: pretty_dio_logger
       sha256: "00b80053063935cf9a6190da344c5373b9d0e92da4c944c878ff2fbef0ef6dc2"
@@ -241,4 +248,4 @@ packages:
     source: hosted
     version: "0.1.4-beta"
 sdks:
-  dart: ">=3.1.0-185.0.dev <4.0.0"
+  dart: ">=3.1.2 <4.0.0"
