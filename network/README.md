@@ -1,12 +1,12 @@
-# Flutter Networking Module
+# Networking Plugin for Flutter
 
-This module provides networking capabilities for your Flutter application. It includes functionality for making various types of HTTP requests and handling API responses. The module is organized into several files:
+This plugin provides networking capabilities for your Flutter application. It includes functionality for making various types of HTTP requests and handling API responses. The module is organized into several files:
 
 ## `Dependencies:`
-   - dio: 5.1.1
+   - dio: 5.3.3
    - http_parser: 4.0.2
    - pretty_dio_logger: 1.3.1
-   - logger: 1.1.0
+   - logger: 2.0.2+1
    - internet_connection_checker: 1.0.0+1
    - equatable: 2.0.5
 
@@ -42,7 +42,7 @@ This file contains the implementation of the `RestClient` class, which is respon
 
 1. Import the networking module in your Dart files:
    ```dart
-   import 'package:network/network.dart';
+   import 'package:network/flutter_network.dart';
    ```
 
 2. Create an instance of `RestClient` to make HTTP requests:

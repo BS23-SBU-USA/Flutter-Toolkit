@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:network/network.dart';
+import 'package:flutter_network/flutter_network.dart';
 
 const String baseUrl = 'https://jsonplaceholder.typicode.com/posts';
 

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:network/src/utils/failures.dart';
+import 'package:flutter_network/src/utils/failures.dart';
 
 import '../utils/pretty_dio_logger.dart';
 

@@ -86,6 +86,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
+  flutter_network:
+    dependency: "direct main"
+    description:
+      path: ".."
+      relative: true
+    source: path
+    version: "1.0.0+2"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -119,10 +126,10 @@ packages:
     dependency: transitive
     description:
       name: logger
-      sha256: "7ad7215c15420a102ec687bb320a7312afd449bac63bfb1c60d9787c27b9767f"
+      sha256: "6bbb9d6f7056729537a4309bda2e74e18e5d9f14302489cc1e93f33b3fe32cac"
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.0"
+    version: "2.0.2+1"
   matcher:
     dependency: transitive
     description:
@@ -147,13 +154,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.1"
-  network:
-    dependency: "direct main"
-    description:
-      path: ".."
-      relative: true
-    source: path
-    version: "1.0.0+1"
   path:
     dependency: transitive
     description:

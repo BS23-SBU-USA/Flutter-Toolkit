@@ -92,9 +92,9 @@ class PrettyDioLogger extends Interceptor {
   }
 
   @override
-  void onError(DioError err, ErrorInterceptorHandler handler) {
+  void onError(DioException err, ErrorInterceptorHandler handler) {
     if (error) {
-      if (err.type == DioErrorType.badResponse) {
+      if (err.type == DioExceptionType.badResponse) {
         final uri = err.response?.requestOptions.uri;
         _printBoxed(
             header:
@@ -213,7 +213,7 @@ class PrettyDioLogger extends Interceptor {
       final isLast = index == data.length - 1;
       dynamic value = data[key];
       if (value is String) {
-        value = '"${value.toString().replaceAll(RegExp(r'(\r|\n)+'), " ")}"';
+        value = '"${value.toString().replaceAll(RegExp(r'([\r\n])+'), " ")}"';
       }
       if (value is Map) {
         if (compact && _canFlattenMap(value)) {
