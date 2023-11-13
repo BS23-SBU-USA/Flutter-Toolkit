@@ -1,4 +1,4 @@
-part of 'rest_client.dart';
+part of 'flutter_network.dart';
 
 //PUBLIC => Generic API url without access token
 //PROTECTED => Generic API url with access token

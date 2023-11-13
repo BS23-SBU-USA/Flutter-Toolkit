@@ -8,12 +8,12 @@ import '../utils/pretty_dio_logger.dart';
 
 part 'api_options.dart';
 
-class RestClient {
-  static final RestClient _instance = RestClient._internal();
+class FlutterNetwork {
+  static final FlutterNetwork _instance = FlutterNetwork._internal();
 
-  RestClient._internal();
+  FlutterNetwork._internal();
 
-  factory RestClient({
+  factory FlutterNetwork({
     required String baseUrl,
     required Future<String?> Function() tokenCallBack,
     VoidCallback? onUnAuthorizedError,
