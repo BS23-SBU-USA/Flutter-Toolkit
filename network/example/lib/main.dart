@@ -16,21 +16,18 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Network Package Example',
       home: NetworkExample(
-        // Passing a rest client for handling network requests
-        restClient: FlutterNetwork(
-          // baseUrl represents the base URL for the API requests
+        /// Here, in a Flutter Network we are passing a base URL, a callback
+        /// function named tokenCallBack that is responsible for providing
+        /// the authentication token required for the API requests which
+        /// returns a Future<String?> that is used for the authorization
+        /// process and an optional parameter named onUnAuthorizedError that
+        /// represents a callback function to handle unauthorized errors. For
+        /// example, onUnAuthorizedError function can be used to facilitate
+        /// immediate logout in scenarios where a user is logged in across
+        /// multiple devices.
+        flutterNetwork: FlutterNetwork(
           baseUrl: baseUrl,
-
-          /* tokenCallBack a callback function that is responsible for providing
-          the authentication token required for the API requests. It returns
-          a Future<String?> which is used for the authorization process.*/
           tokenCallBack: () => Future.value(null),
-
-          /* This is an optional parameter that represents a callback function
-         to handle unauthorized errors. For example, this function can be used
-         to facilitate immediate logout in scenarios where a user is logged in
-         across multiple devices. */
-
           // onUnAuthorizedError:
           //     () {},
         ),
@@ -42,10 +39,10 @@ class MyApp extends StatelessWidget {
 class NetworkExample extends StatefulWidget {
   const NetworkExample({
     super.key,
-    required this.restClient,
+    required this.flutterNetwork,
   });
 
-  final FlutterNetwork restClient;
+  final FlutterNetwork flutterNetwork;
 
   @override
   State<NetworkExample> createState() => _NetworkExampleState();
@@ -93,14 +90,15 @@ class _NetworkExampleState extends State<NetworkExample> {
   }
 
   Future<void> fetchPosts() async {
-    final response = await widget.restClient.get(
-      APIType
-          .public, // Passing the API type, protected can be used for private API
-      baseUrl, // Passing the endpoint url
+    /// Here, we are passing the API type (public/ protected) and end point URL
+    /// with required query parameters
+    final response = await widget.flutterNetwork.get(
+      APIType.public,
+      baseUrl,
       query: {
         '_page': 1,
         '_limit': 10,
-      }, // Takes the query parameters required for the API calling
+      },
     );
     if (response.statusCode == 200) {
       List<dynamic> body = response.data;
