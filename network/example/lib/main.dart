@@ -36,11 +36,89 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// class NetworkExample extends StatefulWidget {
+//   const NetworkExample({
+//     super.key,
+//     required this.flutterNetwork,
+//   });
+//
+//   final FlutterNetwork flutterNetwork;
+//
+//   @override
+//   State<NetworkExample> createState() => _NetworkExampleState();
+// }
+//
+// class _NetworkExampleState extends State<NetworkExample> {
+//   late List<PostModel> posts = [];
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     fetchPosts();
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: const Text('Network Package'),
+//         centerTitle: true,
+//       ),
+//       body: posts.isEmpty
+//           ? const Center(
+//               child: CircularProgressIndicator(),
+//             )
+//           : ListView.builder(
+//               itemCount: posts.length,
+//               itemBuilder: (BuildContext context, int index) {
+//                 return Padding(
+//                   padding: const EdgeInsets.all(8.0),
+//                   child: Card(
+//                     child: ListTile(
+//                       title: Text(
+//                         posts[index].title,
+//                       ),
+//                       subtitle: Text(
+//                         posts[index].body,
+//                       ),
+//                     ),
+//                   ),
+//                 );
+//               },
+//             ),
+//     );
+//   }
+//
+//   Future<void> fetchPosts() async {
+//     /// Here, we are passing the API type (public/ protected) and end point URL
+//     /// with required query parameters
+//     final response = await widget.flutterNetwork.get(
+//       APIType.public,
+//       baseUrl,
+//       query: {
+//         '_page': 1,
+//         '_limit': 10,
+//       },
+//     );
+//     if (response.statusCode == 200) {
+//       List<dynamic> body = response.data;
+//
+//       setState(() {
+//         posts = body.map((dynamic item) => PostModel.fromJson(item)).toList();
+//       });
+//     } else {
+//       throw Exception('Failed to load posts');
+//     }
+//   }
+// }
+
+// Implementation with FutureBuilder
+
 class NetworkExample extends StatefulWidget {
   const NetworkExample({
-    super.key,
+    Key? key,
     required this.flutterNetwork,
-  });
+  }) : super(key: key);
 
   final FlutterNetwork flutterNetwork;
 
@@ -49,12 +127,12 @@ class NetworkExample extends StatefulWidget {
 }
 
 class _NetworkExampleState extends State<NetworkExample> {
-  late List<PostModel> posts = [];
+  late Future<List<PostModel>> futurePosts;
 
   @override
   void initState() {
     super.initState();
-    fetchPosts();
+    futurePosts = fetchPosts();
   }
 
   @override
@@ -64,32 +142,47 @@ class _NetworkExampleState extends State<NetworkExample> {
         title: const Text('Network Package'),
         centerTitle: true,
       ),
-      body: posts.isEmpty
-          ? const Center(
+      body: FutureBuilder<List<PostModel>>(
+        future: futurePosts,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
               child: CircularProgressIndicator(),
-            )
-          : ListView.builder(
-              itemCount: posts.length,
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(
+              child: Text('No data available'),
+            );
+          } else {
+            return ListView.builder(
+              itemCount: snapshot.data!.length,
               itemBuilder: (BuildContext context, int index) {
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Card(
                     child: ListTile(
                       title: Text(
-                        posts[index].title,
+                        snapshot.data![index].title,
                       ),
                       subtitle: Text(
-                        posts[index].body,
+                        snapshot.data![index].body,
                       ),
                     ),
                   ),
                 );
               },
-            ),
+            );
+          }
+        },
+      ),
     );
   }
 
-  Future<void> fetchPosts() async {
+  Future<List<PostModel>> fetchPosts() async {
     /// Here, we are passing the API type (public/ protected) and end point URL
     /// with required query parameters
     final response = await widget.flutterNetwork.get(
@@ -102,10 +195,7 @@ class _NetworkExampleState extends State<NetworkExample> {
     );
     if (response.statusCode == 200) {
       List<dynamic> body = response.data;
-
-      setState(() {
-        posts = body.map((dynamic item) => PostModel.fromJson(item)).toList();
-      });
+      return body.map((dynamic item) => PostModel.fromJson(item)).toList();
     } else {
       throw Exception('Failed to load posts');
     }
