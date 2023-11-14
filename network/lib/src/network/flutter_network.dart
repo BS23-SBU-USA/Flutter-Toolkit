@@ -1,10 +1,9 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
+import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_network/src/network/dio_cache_service.dart';
 import 'package:flutter_network/src/utils/failures.dart';
-
-import '../utils/pretty_dio_logger.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 part 'api_options.dart';
 
@@ -17,6 +16,7 @@ class FlutterNetwork {
     required String baseUrl,
     required Future<String?> Function() tokenCallBack,
     VoidCallback? onUnAuthorizedError,
+    Future<String?> Function()? initializeCacheDirectory,
     int connectionTimeout = 30000,
     int receiveTimeout = 30000,
   }) {
@@ -25,6 +25,7 @@ class FlutterNetwork {
     _instance.onUnAuthorizedError = onUnAuthorizedError ?? () {};
     _instance.connectionTimeout = connectionTimeout;
     _instance.receiveTimeout = receiveTimeout;
+    _instance.initializeCacheDirectory = initializeCacheDirectory;
 
     BaseOptions options = BaseOptions(
       baseUrl: baseUrl,
@@ -42,14 +43,17 @@ class FlutterNetwork {
   late String baseUrl;
   late Future<String?> Function() tokenCallBack;
   late VoidCallback onUnAuthorizedError;
+  late Future<String?> Function()? initializeCacheDirectory;
+  String? cacheDirectoryPath;
 
   Future<Response<dynamic>> get(
-    APIType apiType,
     String path, {
+    APIType apiType = APIType.public,
     Map<String, dynamic>? query,
     Map<String, dynamic>? headers,
+    bool isCacheEnabled = true,
   }) async {
-    _setDioInterceptorList();
+    _setDioInterceptorList(isCacheEnabled: isCacheEnabled);
 
     final standardHeaders = await _getOptions(apiType);
 
@@ -60,9 +64,10 @@ class FlutterNetwork {
   }
 
   Future<Response<dynamic>> post(
-    APIType apiType,
-    String path,
-    Map<String, dynamic> data, {
+    String path, {
+    required Map<String, dynamic> data,
+    APIType apiType = APIType.public,
+    bool isFormData = false,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? query,
   }) async {
@@ -73,36 +78,20 @@ class FlutterNetwork {
       standardHeaders.headers?.addAll(headers);
     }
 
-    return _dio
-        .post(
-          path,
-          data: data,
-          options: standardHeaders,
-          queryParameters: query,
-        )
-        .then((value) => value)
-        .catchError(_handleException);
-  }
-
-  /// Supports media upload
-  Future<Response<dynamic>> postFormData(
-    APIType apiType,
-    String path,
-    Map<String, dynamic> data, {
-    Map<String, dynamic>? headers,
-    Map<String, dynamic>? query,
-  }) async {
-    _setDioInterceptorList();
-
-    final standardHeaders = await _getOptions(apiType);
-    standardHeaders.headers?.addAll({
-      'Content-Type': 'multipart/form-data',
-    });
+    if (isFormData) {
+      standardHeaders.headers?.addAll({
+        'Content-Type': 'multipart/form-data',
+      });
+    } else {
+      if (headers != null) {
+        standardHeaders.headers?.addAll(headers);
+      }
+    }
 
     return _dio
         .post(
           path,
-          data: FormData.fromMap(data),
+          data: isFormData ? FormData.fromMap(data) : data,
           options: standardHeaders,
           queryParameters: query,
         )
@@ -111,15 +100,15 @@ class FlutterNetwork {
   }
 
   Future<Response<dynamic>> patch(
-    APIType api,
-    String path,
-    Map<String, dynamic> data, {
+    String path, {
+    required Map<String, dynamic> data,
+    APIType apiType = APIType.public,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? query,
   }) async {
     _setDioInterceptorList();
 
-    final standardHeaders = await _getOptions(api);
+    final standardHeaders = await _getOptions(apiType);
     if (headers != null) {
       standardHeaders.headers?.addAll(headers);
     }
@@ -136,23 +125,36 @@ class FlutterNetwork {
   }
 
   Future<Response<dynamic>> put(
-    APIType apiType,
-    String path,
-    Map<String, dynamic> data, {
+    String path, {
+    required Map<String, dynamic> data,
+    APIType apiType = APIType.public,
+    bool isFormData = false,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? query,
   }) async {
     _setDioInterceptorList();
 
     final standardHeaders = await _getOptions(apiType);
-    if (headers != null) {
-      standardHeaders.headers?.addAll(headers);
+
+    if (isFormData) {
+      if (headers != null) {
+        standardHeaders.headers?.addAll({
+          'Content-Type': 'multipart/form-data',
+        });
+      }
+      data.addAll({
+        '_method': 'PUT',
+      });
+    } else {
+      if (headers != null) {
+        standardHeaders.headers?.addAll(headers);
+      }
     }
 
     return _dio
         .put(
           path,
-          data: data,
+          data: isFormData ? FormData.fromMap(data) : data,
           options: standardHeaders,
         )
         .then((value) => value)
@@ -160,9 +162,9 @@ class FlutterNetwork {
   }
 
   Future<Response<dynamic>> delete(
-    APIType apiType,
     String path, {
     Map<String, dynamic>? data,
+    APIType apiType = APIType.public,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? query,
   }) async {
@@ -182,53 +184,6 @@ class FlutterNetwork {
         )
         .then((value) => value)
         .catchError(_handleException);
-  }
-
-  /// Supports media upload
-  Future<Response<dynamic>> putFormData(
-    APIType apiType,
-    String path,
-    Map<String, dynamic> data, {
-    Map<String, dynamic>? headers,
-    Map<String, dynamic>? query,
-  }) async {
-    _setDioInterceptorList();
-
-    final standardHeaders = await _getOptions(apiType);
-    if (headers != null) {
-      standardHeaders.headers?.addAll({
-        'Content-Type': 'multipart/form-data',
-      });
-    }
-    data.addAll({
-      '_method': 'PUT',
-    });
-
-    return _dio
-        .post(
-          path,
-          data: FormData.fromMap(data),
-          queryParameters: query,
-          options: standardHeaders,
-        )
-        .then((value) => value)
-        .catchError(_handleException);
-  }
-
-  /// Upload file in s3bucket
-  Future<Response> fileUploadInS3Bucket({
-    required String preAssignedUrl,
-    required File file,
-  }) async {
-    return _dio.put(
-      preAssignedUrl,
-      data: file.openRead(),
-      options: Options(
-        headers: {
-          Headers.contentLengthHeader: await file.length(),
-        },
-      ),
-    );
   }
 
   dynamic _handleException(error) {
@@ -287,13 +242,31 @@ class FlutterNetwork {
     }
   }
 
-  void _setDioInterceptorList() {
+  void _setDioInterceptorList({bool isCacheEnabled = false}) async {
     List<Interceptor> interceptorList = [];
     _dio.interceptors.clear();
 
     if (kDebugMode) {
       interceptorList.add(PrettyDioLogger());
     }
+
+    try {
+      if (initializeCacheDirectory != null) {
+        cacheDirectoryPath ??= await initializeCacheDirectory!();
+      }
+
+      if (isCacheEnabled) {
+        interceptorList.add(
+          DioCacheInterceptor(
+            options: DioCacheService.getCacheOptions(path: cacheDirectoryPath),
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      print(e.toString());
+      print(stackTrace.toString());
+    }
+
     _dio.interceptors.addAll(interceptorList);
   }
 
