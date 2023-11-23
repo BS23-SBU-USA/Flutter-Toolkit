@@ -2,13 +2,39 @@
 
 This plugin provides networking capabilities for your Flutter application. It includes functionality for making various types of HTTP requests and handling API responses. The module is organized into several files:
 
+## Features:
+
+1. **Flutter Network:**
+   - Supports HTTP methods like `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`.
+   - Easily customizable with various options such as headers, timeouts, and more.
+
+2. **Error Handling:**
+   - `Failure` class representing different types of failure responses from the server.
+   - Concrete classes like `BadRequest`, `Unauthorized`, etc., extend the `Failure` class.
+
+3. **Caching:**
+   - Integrated caching functionality using `dio_cache_interceptor`.
+   - `CacheInterceptor` to add caching to your HTTP requests.
+   - A caching directory can be added to `FlutterNetwork` for caching HTTP responses in initialize cache directory call back based on whether Hive is used in the project or not.
+   - If Hive is used, no need to initialize, otherwise, initialize the cache directory.
+
+4. **Token-based Authentication:**
+   - Easy integration of authentication tokens with the `tokenCallBack` function.
+   - The `FlutterNetwork` instance automatically handles the authentication token for protected API calls, eliminating the need to pass it multiple times during initialization.
+
+5. **Dependency Management:**
+   - Utilizes popular packages like `dio`, `dio_smart_retry`, `dio_cache_interceptor`, and `dio_cache_interceptor_hive_store`.
+
+6. **Customizable:**
+   - Can be easily customized to suit your application's specific requirements.
+
 ## `Dependencies:`
    - dio: 5.3.3
-   - http_parser: 4.0.2
+   - dio_smart_retry: 6.0.0
+   - dio_cache_interceptor: 3.4.4
+   - dio_cache_interceptor_hive_store: 3.2.1 
    - pretty_dio_logger: 1.3.1
-   - logger: 2.0.2+1
-   - internet_connection_checker: 1.0.0+1
-   - equatable: 2.0.5
+
 
 ## `network.dart`
 
@@ -16,27 +42,9 @@ This file serves as the entry point for the networking module and exports releva
 
 ### Exported Components:
 
-- `RestClient`: A class responsible for making HTTP requests. It supports different HTTP methods like `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`.
+- `FlutterNetwork`: A class responsible for making HTTP requests. It supports different HTTP methods like `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`.
 
 - `Failure`: An abstract class representing different types of failure responses from the server. Various concrete classes like `BadRequest`, `Unauthorized`, etc., extend this class.
-
-- `PrettyDioLogger`: A custom Dio interceptor that logs network requests and responses in a readable and organized format. It helps with debugging and understanding API interactions.
-
-## `pretty_dio_logger.dart`
-
-This file contains the implementation of the `PrettyDioLogger` class, which is a custom Dio interceptor for logging network requests and responses.
-
-## `failures.dart`
-
-This file defines different types of failure classes representing various HTTP error responses. Each class corresponds to a specific HTTP status code and includes information about the error, such as the error message and status code.
-
-## `exception_message.dart`
-
-This file contains a class `ExceptionMessage` with pre-defined error messages. It provides a central place for maintaining error messages that can be used throughout the networking module.
-
-## `rest_client.dart`
-
-This file contains the implementation of the `RestClient` class, which is responsible for making HTTP requests. It supports different HTTP methods, handles response parsing, and manages headers.
 
 # `How to Use`
 
@@ -45,118 +53,24 @@ This file contains the implementation of the `RestClient` class, which is respon
    import 'package:network/flutter_network.dart';
    ```
 
-2. Create an instance of `RestClient` to make HTTP requests:
+2. Create an instance of `FlutterNetwork` to make HTTP requests:
    ```dart
-   RestClient restClient = RestClient(
+   FlutterNetwork flutterNetwork = FlutterNetwork(
      baseUrl: 'https://api.example.com',
-     token: 'your_access_token',
+     tokenCallBack: () {
+      return Future.value();
+    },
    );
    ```
 
-3. Use the `restClient` instance to make HTTP requests:
+3. Use the `flutterNetwork` instance to make HTTP requests:
    ```dart
-   Response<dynamic> response = await restClient.get(
-     APIType.public,
+   Response<dynamic> response = await flutterNetwork.get(
      '/endpoint',
+     apiType: APIType.protected,
+     data: {'requestBody': requestBody}  
      query: {'param': 'value'},
    );
-   ```
-
-4. Handle responses and errors using the relevant classes:
-   ### Example Snippet (Clean Architecture):
-   *P.S - Feel free to use any architecture of your liking*
-   
-   ### Data Source
-   ```dart
-   /// Interface Class
-   abstract class ProductDataSource {
-      Future<Response> fetchProductList();
-
-      Future<Response> fetchProduct(int id);
-   }
-
-   /// Implementation Class
-   class ProductDataSourceImpl implements ProductDataSource {
-      ProductDataSourceImpl({
-         required this.client,
-      });
-
-      final RestClient client;
-
-      @override
-      Future<Response> fetchProductList() async {
-         return await client.get(
-            APIType.public,
-            'products',
-         );
-      }
-
-      @override
-      Future<Response> fetchProduct(int id) async {
-         return await client.get(
-            APIType.public,
-            'products/$id',
-         );
-      }
-   }
-   ```
-   ### Repository
-   ```dart
-   /// Interface Class
-   /// P.S. you can use Either from dartz library or you can use Records feature
-   abstract class ProductRepository {
-      Future<Either<ErrorModel, List<ProductModel>>> productList();
-
-      Future<Either<ErrorModel, ProductModel>> product(int id);
-   }
-   
-   /// Implementation Class
-   class ProductRepositoryImpl implements ProductRepository {
-      ProductRepositoryImpl({required this.dataSource});
-
-      final ProductDataSource dataSource;
-
-      @override
-      Future<Either<ErrorModel, List<ProductModel>>> productList() async {
-         return await dataSource.fetchProductList().guard(
-               (data) => (data as List).map((e) {
-                  return ProductModel.fromJson(e);
-               }).toList(),
-            );
-      }
-
-      @override
-      Future<Either<ErrorModel, ProductModel>> product(int id) async {
-         return await dataSource
-            .fetchProduct(id)
-            .guard((data) => ProductModel.fromJson(data));
-      }
-   }
-
-   ```
-   ### Helper Extension to handle response and Error
-   ```dart
-   extension FutureResponseExtension on Future<Response> {
-      /// Use Either from dartz library or you can use Records feature
-      /// ErrorModel can be any model of your choice
-      Future<Either<ErrorModel, T>> guard<T>(Function(dynamic) parse) async {
-         try {
-            final response = await this;
-
-            return Right(parse(response.data));
-         } on Failure catch (e, stacktrace) {
-            /// Feel free to change the log with any logger library of your choice
-            log(
-               runtimeType.toString(),
-               error: {},
-               stackTrace: stacktrace,
-            );
-            ErrorModel errorModel = ErrorModel.fromJson(e.error);
-
-            return Left(errorModel);
-         }
-      }
-   }
    ```
 
 Feel free to customize the networking module to suit your application's requirements. Happy networking!
