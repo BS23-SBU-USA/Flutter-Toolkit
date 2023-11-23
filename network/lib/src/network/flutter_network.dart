@@ -51,9 +51,13 @@ class FlutterNetwork {
     APIType apiType = APIType.public,
     Map<String, dynamic>? query,
     Map<String, dynamic>? headers,
-    bool isCacheEnabled = true,
+    bool isCacheEnabled = false,
   }) async {
-    _setDioInterceptorList(isCacheEnabled: isCacheEnabled);
+    if (isCacheEnabled && initializeCacheDirectory != null) {
+      _setDioInterceptorList(isCacheEnabled: true);
+    } else {
+      _setDioInterceptorList(isCacheEnabled: false);
+    }
 
     final standardHeaders = await _getOptions(apiType);
 
