@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_network/src/network/dio_cache_service.dart';
 import 'package:flutter_network/src/utils/failures.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
@@ -16,7 +16,8 @@ class FlutterNetwork {
     required String baseUrl,
     required Future<String?> Function() tokenCallBack,
     VoidCallback? onUnAuthorizedError,
-    Future<String?> Function()? initializeCacheDirectory,
+    CacheOptions? cacheOptions,
+    RetryInterceptor? retryInterceptor,
     int connectionTimeout = 30000,
     int receiveTimeout = 30000,
   }) {
@@ -25,7 +26,8 @@ class FlutterNetwork {
     _instance.onUnAuthorizedError = onUnAuthorizedError ?? () {};
     _instance.connectionTimeout = connectionTimeout;
     _instance.receiveTimeout = receiveTimeout;
-    _instance.initializeCacheDirectory = initializeCacheDirectory;
+    _instance.cacheOptions = cacheOptions;
+    _instance.retryInterceptor = retryInterceptor;
 
     BaseOptions options = BaseOptions(
       baseUrl: baseUrl,
@@ -43,8 +45,8 @@ class FlutterNetwork {
   late String baseUrl;
   late Future<String?> Function() tokenCallBack;
   late VoidCallback onUnAuthorizedError;
-  late Future<String?> Function()? initializeCacheDirectory;
-  String? cacheDirectoryPath;
+  late CacheOptions? cacheOptions;
+  late RetryInterceptor? retryInterceptor;
 
   Future<Response<dynamic>> get(
     String path, {
@@ -53,11 +55,7 @@ class FlutterNetwork {
     Map<String, dynamic>? headers,
     bool isCacheEnabled = false,
   }) async {
-    if (isCacheEnabled && initializeCacheDirectory != null) {
-      _setDioInterceptorList(isCacheEnabled: true);
-    } else {
-      _setDioInterceptorList(isCacheEnabled: false);
-    }
+    _setDioInterceptorList(isCacheEnabled: isCacheEnabled);
 
     final standardHeaders = await _getOptions(apiType);
 
@@ -254,21 +252,14 @@ class FlutterNetwork {
       interceptorList.add(PrettyDioLogger());
     }
 
-    try {
-      if (initializeCacheDirectory != null) {
-        cacheDirectoryPath ??= await initializeCacheDirectory!();
-      }
+    if (isCacheEnabled && cacheOptions == null) {
+      throw Exception('Cache options is null. Please provide cache options');
+    } else {
+      interceptorList.add(DioCacheInterceptor(options: cacheOptions!));
+    }
 
-      if (isCacheEnabled) {
-        interceptorList.add(
-          DioCacheInterceptor(
-            options: DioCacheService.getCacheOptions(path: cacheDirectoryPath),
-          ),
-        );
-      }
-    } catch (e, stackTrace) {
-      print(e.toString());
-      print(stackTrace.toString());
+    if (retryInterceptor != null) {
+      interceptorList.add(retryInterceptor!);
     }
 
     _dio.interceptors.addAll(interceptorList);

@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_network/flutter_network.dart';
 import 'package:network_example/post_model.dart';
-import 'package:path_provider/path_provider.dart';
 
 const String baseUrl = 'https://jsonplaceholder.typicode.com';
 const String posts = '/posts';
@@ -33,10 +30,6 @@ class MyApp extends StatelessWidget {
     baseUrl: baseUrl,
     tokenCallBack: () {
       return Future.value();
-    },
-    initializeCacheDirectory: () async {
-      Directory dir = await getApplicationCacheDirectory();
-      return dir.path;
     },
   );
 
