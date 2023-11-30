@@ -12,25 +12,14 @@ void main() async {
 class MyApp extends StatelessWidget {
   MyApp({super.key});
 
-  /// Creates an instance of [FlutterNetwork] for making HTTP requests.
+  /// [FlutterNetwork] is a utility class for handling network requests in
+  /// Flutter applications.
   ///
-  /// Parameters:
-  /// - [baseUrl]: Specifies the base URL for API requests.
-  /// - [tokenCallBack]: A callback function that provides the authentication
-  ///   token required for API requests. It returns a [Future<String?>].
-  /// - [onUnAuthorizedError]: An optional callback function that handles
-  ///   unauthorized errors. For example, it can be used to facilitate immediate
-  ///   logout in scenarios where a user is logged in across multiple devices.
-  /// - [initializeCacheDirectory]: An optional callback function that allows
-  ///   custom initialization of the cache directory used for caching network
-  ///   responses. If not provided, the default cache directory will be used. If
-  ///   Hive is used, no need to initialize, otherwise, initialize the cache
-  ///   directory.
+  /// It provides a convenient way to perform HTTP requests by encapsulating
+  /// common networking functionalities and allowing customization of the
+  /// base URL.
   final FlutterNetwork flutterNetwork = FlutterNetwork(
     baseUrl: baseUrl,
-    tokenCallback: () {
-      return Future.value();
-    },
   );
 
   @override
@@ -122,8 +111,8 @@ class NetworkExample extends StatelessWidget {
       List<dynamic> body = response.data;
       return body.map((dynamic item) => PostModel.fromJson(item)).toList();
     } catch (e, stackTrace) {
-      print(e.toString());
-      print(stackTrace.toString());
+      debugPrint(e.toString());
+      debugPrint(stackTrace.toString());
       throw Exception('Failed to load posts');
     }
   }
