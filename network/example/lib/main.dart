@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
   ///   directory.
   final FlutterNetwork flutterNetwork = FlutterNetwork(
     baseUrl: baseUrl,
-    tokenCallBack: () {
+    tokenCallback: () {
       return Future.value();
     },
   );
