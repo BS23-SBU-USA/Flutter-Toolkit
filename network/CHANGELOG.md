@@ -1,6 +1,6 @@
-## Breaking: 1.1.0+5
+## Breaking: 1.2.1+5
 
-* **BREAKING**  Removed initializeCacheDirectory and introduce CacheOptions
+* **BREAKING**  Removed initializeCacheDirectory and introduced CacheOptions
 * Introduced retry mechanism
 * Made tokenCallback function optional
 
