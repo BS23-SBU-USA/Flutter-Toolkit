@@ -1,3 +1,9 @@
+## Breaking: 1.1.0+5
+
+* **BREAKING**  Removed initializeCacheDirectory and introduce CacheOptions
+* Introduced retry mechanism
+* Made tokenCallback function optional
+
 ## Breaking: 1.1.0+3
 
 * **BREAKING**  Improved overall FlutterNetwork implementation

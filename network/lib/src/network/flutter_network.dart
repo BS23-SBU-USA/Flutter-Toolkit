@@ -22,7 +22,7 @@ class FlutterNetwork {
     int receiveTimeout = 30000,
   }) {
     _instance.baseUrl = baseUrl;
-    _instance.tokenCallback;
+    _instance.tokenCallback = tokenCallback;
     _instance.onUnAuthorizedError = onUnAuthorizedError ?? () {};
     _instance.connectionTimeout = connectionTimeout;
     _instance.receiveTimeout = receiveTimeout;
@@ -43,7 +43,7 @@ class FlutterNetwork {
   late int connectionTimeout;
   late int receiveTimeout;
   late String baseUrl;
-  late Future<String?> Function()? tokenCallback;
+  Future<String?> Function()? tokenCallback;
   late VoidCallback onUnAuthorizedError;
   late CacheOptions? cacheOptions;
   late RetryInterceptor? retryInterceptor;
@@ -271,10 +271,11 @@ class FlutterNetwork {
         return PublicApiOptions().options;
 
       case APIType.protected:
-        if(tokenCallback == null) {
-          throw Exception('Token callback is null. Please provide token callback');
+        if (tokenCallback == null) {
+          throw Exception(
+              'Token callback is null. Please provide token callback');
         }
-        
+
         String? token = await tokenCallback!();
 
         return ProtectedApiOptions(token!).options;
