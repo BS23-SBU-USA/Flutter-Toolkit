@@ -51,13 +51,14 @@ class FlutterNetwork {
   Future<Response<dynamic>> get(
     String path, {
     APIType apiType = APIType.public,
+    TokenType tokenType = TokenType.bearer,
     Map<String, dynamic>? query,
     Map<String, dynamic>? headers,
     bool isCacheEnabled = false,
   }) async {
     _setDioInterceptorList(isCacheEnabled: isCacheEnabled);
 
-    final standardHeaders = await _getOptions(apiType);
+    final standardHeaders = await _getOptions(apiType, tokenType);
 
     return _dio
         .get(path, queryParameters: query, options: standardHeaders)
@@ -69,13 +70,14 @@ class FlutterNetwork {
     String path, {
     required Map<String, dynamic> data,
     APIType apiType = APIType.public,
+    TokenType tokenType = TokenType.bearer,
     bool isFormData = false,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? query,
   }) async {
     _setDioInterceptorList();
 
-    final standardHeaders = await _getOptions(apiType);
+    final standardHeaders = await _getOptions(apiType, tokenType);
     if (headers != null) {
       standardHeaders.headers?.addAll(headers);
     }
@@ -105,12 +107,13 @@ class FlutterNetwork {
     String path, {
     required Map<String, dynamic> data,
     APIType apiType = APIType.public,
+    TokenType tokenType = TokenType.bearer,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? query,
   }) async {
     _setDioInterceptorList();
 
-    final standardHeaders = await _getOptions(apiType);
+    final standardHeaders = await _getOptions(apiType, tokenType);
     if (headers != null) {
       standardHeaders.headers?.addAll(headers);
     }
@@ -130,13 +133,14 @@ class FlutterNetwork {
     String path, {
     required Map<String, dynamic> data,
     APIType apiType = APIType.public,
+    TokenType tokenType = TokenType.bearer,
     bool isFormData = false,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? query,
   }) async {
     _setDioInterceptorList();
 
-    final standardHeaders = await _getOptions(apiType);
+    final standardHeaders = await _getOptions(apiType, tokenType);
 
     if (isFormData) {
       if (headers != null) {
@@ -167,12 +171,13 @@ class FlutterNetwork {
     String path, {
     Map<String, dynamic>? data,
     APIType apiType = APIType.public,
+    TokenType tokenType = TokenType.bearer,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? query,
   }) async {
     _setDioInterceptorList();
 
-    final standardHeaders = await _getOptions(apiType);
+    final standardHeaders = await _getOptions(apiType, tokenType);
     if (headers != null) {
       standardHeaders.headers?.addAll(headers);
     }
@@ -265,7 +270,7 @@ class FlutterNetwork {
     _dio.interceptors.addAll(interceptorList);
   }
 
-  Future<Options> _getOptions(APIType api) async {
+  Future<Options> _getOptions(APIType api, TokenType tokenType) async {
     switch (api) {
       case APIType.public:
         return PublicApiOptions().options;
@@ -278,7 +283,13 @@ class FlutterNetwork {
 
         String? token = await tokenCallback!();
 
-        return ProtectedApiOptions(token!).options;
+        if (tokenType == TokenType.basic) {
+          token = 'Basic $token';
+        } else {
+          token = 'Bearer $token';
+        }
+
+        return ProtectedApiOptions(token).options;
 
       default:
         return PublicApiOptions().options;
