@@ -1,3 +1,7 @@
+## Breaking: 1.2.2+6
+
+* Bug fixes and improvements
+
 ## Breaking: 1.2.1+5
 
 * **BREAKING**  Removed initializeCacheDirectory and introduced CacheOptions
