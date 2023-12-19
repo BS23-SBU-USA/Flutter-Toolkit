@@ -15,6 +15,7 @@ class FlutterNetwork {
   factory FlutterNetwork({
     required String baseUrl,
     Future<String?> Function()? tokenCallback,
+    TokenType tokenType = TokenType.bearer,
     VoidCallback? onUnAuthorizedError,
     CacheOptions? cacheOptions,
     RetryInterceptor? retryInterceptor,
@@ -23,6 +24,7 @@ class FlutterNetwork {
   }) {
     _instance.baseUrl = baseUrl;
     _instance.tokenCallback = tokenCallback;
+    _instance.tokenType = tokenType;
     _instance.onUnAuthorizedError = onUnAuthorizedError ?? () {};
     _instance.connectionTimeout = connectionTimeout;
     _instance.receiveTimeout = receiveTimeout;
@@ -44,6 +46,7 @@ class FlutterNetwork {
   late int receiveTimeout;
   late String baseUrl;
   Future<String?> Function()? tokenCallback;
+  late TokenType tokenType;
   late VoidCallback onUnAuthorizedError;
   late CacheOptions? cacheOptions;
   late RetryInterceptor? retryInterceptor;
@@ -51,14 +54,13 @@ class FlutterNetwork {
   Future<Response<dynamic>> get(
     String path, {
     APIType apiType = APIType.public,
-    TokenType tokenType = TokenType.bearer,
     Map<String, dynamic>? query,
     Map<String, dynamic>? headers,
-    bool isCacheEnabled = false,
+    bool shouldCache = false,
   }) async {
-    _setDioInterceptorList(isCacheEnabled: isCacheEnabled);
+    _setDioInterceptorList(shouldCache: shouldCache);
 
-    final standardHeaders = await _getOptions(apiType, tokenType);
+    final standardHeaders = await _getOptions(apiType);
 
     return _dio
         .get(path, queryParameters: query, options: standardHeaders)
@@ -70,14 +72,13 @@ class FlutterNetwork {
     String path, {
     required Map<String, dynamic> data,
     APIType apiType = APIType.public,
-    TokenType tokenType = TokenType.bearer,
     bool isFormData = false,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? query,
   }) async {
     _setDioInterceptorList();
 
-    final standardHeaders = await _getOptions(apiType, tokenType);
+    final standardHeaders = await _getOptions(apiType);
     if (headers != null) {
       standardHeaders.headers?.addAll(headers);
     }
@@ -107,13 +108,12 @@ class FlutterNetwork {
     String path, {
     required Map<String, dynamic> data,
     APIType apiType = APIType.public,
-    TokenType tokenType = TokenType.bearer,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? query,
   }) async {
     _setDioInterceptorList();
 
-    final standardHeaders = await _getOptions(apiType, tokenType);
+    final standardHeaders = await _getOptions(apiType);
     if (headers != null) {
       standardHeaders.headers?.addAll(headers);
     }
@@ -133,14 +133,13 @@ class FlutterNetwork {
     String path, {
     required Map<String, dynamic> data,
     APIType apiType = APIType.public,
-    TokenType tokenType = TokenType.bearer,
     bool isFormData = false,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? query,
   }) async {
     _setDioInterceptorList();
 
-    final standardHeaders = await _getOptions(apiType, tokenType);
+    final standardHeaders = await _getOptions(apiType);
 
     if (isFormData) {
       if (headers != null) {
@@ -171,13 +170,12 @@ class FlutterNetwork {
     String path, {
     Map<String, dynamic>? data,
     APIType apiType = APIType.public,
-    TokenType tokenType = TokenType.bearer,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? query,
   }) async {
     _setDioInterceptorList();
 
-    final standardHeaders = await _getOptions(apiType, tokenType);
+    final standardHeaders = await _getOptions(apiType);
     if (headers != null) {
       standardHeaders.headers?.addAll(headers);
     }
@@ -249,7 +247,7 @@ class FlutterNetwork {
     }
   }
 
-  void _setDioInterceptorList({bool isCacheEnabled = false}) async {
+  void _setDioInterceptorList({bool shouldCache = false}) async {
     List<Interceptor> interceptorList = [];
     _dio.interceptors.clear();
 
@@ -257,10 +255,12 @@ class FlutterNetwork {
       interceptorList.add(PrettyDioLogger());
     }
 
-    if (isCacheEnabled && cacheOptions == null) {
-      throw Exception('Cache options is null. Please provide cache options');
-    } else {
-      interceptorList.add(DioCacheInterceptor(options: cacheOptions!));
+    if (shouldCache) {
+      if (cacheOptions == null) {
+        throw Exception('Cache options is null. Please provide cache options');
+      } else {
+        interceptorList.add(DioCacheInterceptor(options: cacheOptions!));
+      }
     }
 
     if (retryInterceptor != null) {
@@ -270,7 +270,7 @@ class FlutterNetwork {
     _dio.interceptors.addAll(interceptorList);
   }
 
-  Future<Options> _getOptions(APIType api, TokenType tokenType) async {
+  Future<Options> _getOptions(APIType api) async {
     switch (api) {
       case APIType.public:
         return PublicApiOptions().options;
