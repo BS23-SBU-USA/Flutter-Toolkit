@@ -1,3 +1,7 @@
+## Breaking: 1.3.2+7
+
+* Improvements token type implementation
+
 ## Breaking: 1.2.2+6
 
 * Bug fixes and improvements
