@@ -1,3 +1,7 @@
+## Breaking: 1.3.3+8
+
+* Data filed type changed from Map<String, dynamic> to Object?
+
 ## Breaking: 1.3.2+7
 
 * Improvements token type implementation

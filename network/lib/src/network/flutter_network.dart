@@ -70,7 +70,7 @@ class FlutterNetwork {
 
   Future<Response<dynamic>> post(
     String path, {
-    required Map<String, dynamic> data,
+    Object? data,
     APIType apiType = APIType.public,
     bool isFormData = false,
     Map<String, dynamic>? headers,
@@ -96,7 +96,7 @@ class FlutterNetwork {
     return _dio
         .post(
           path,
-          data: isFormData ? FormData.fromMap(data) : data,
+          data: data,
           options: standardHeaders,
           queryParameters: query,
         )
@@ -106,7 +106,7 @@ class FlutterNetwork {
 
   Future<Response<dynamic>> patch(
     String path, {
-    required Map<String, dynamic> data,
+    Object? data,
     APIType apiType = APIType.public,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? query,
@@ -131,7 +131,7 @@ class FlutterNetwork {
 
   Future<Response<dynamic>> put(
     String path, {
-    required Map<String, dynamic> data,
+    Object? data,
     APIType apiType = APIType.public,
     bool isFormData = false,
     Map<String, dynamic>? headers,
@@ -147,9 +147,6 @@ class FlutterNetwork {
           'Content-Type': 'multipart/form-data',
         });
       }
-      data.addAll({
-        '_method': 'PUT',
-      });
     } else {
       if (headers != null) {
         standardHeaders.headers?.addAll(headers);
@@ -159,7 +156,7 @@ class FlutterNetwork {
     return _dio
         .put(
           path,
-          data: isFormData ? FormData.fromMap(data) : data,
+          data: data,
           options: standardHeaders,
         )
         .then((value) => value)
@@ -168,7 +165,7 @@ class FlutterNetwork {
 
   Future<Response<dynamic>> delete(
     String path, {
-    Map<String, dynamic>? data,
+    Object? data,
     APIType apiType = APIType.public,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? query,
